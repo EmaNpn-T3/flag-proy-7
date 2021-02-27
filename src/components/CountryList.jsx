@@ -1,47 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import Country from "./Country" 
+import React, { useEffect } from 'react'
+import styled from 'styled-components'
+import Country from './Country'
+import { useSelector, useDispatch } from 'react-redux'
+import Wrapper from './wrapper'
 
-
-
-const  CountryListStyled = styled.div`
+const CountryListStyled = styled.div`
   display: grid;
   grid-row-gap: 2.3em;
-  /*grid-template-columns:*/ 
+  grid-auto-flow: columns;
+  grid-column-gap: 66px;
+  grid-template-columns: repeat(auto-fill, 270px);
   background: var(--background);
-  border: 1px solid red;
-  justify-content:center;
-  padding: 4em 2em;
-`;
+  justify-content: center;
+  padding: 3em 0;
+`
 
 function CountryList() {
+  const dispatch = useDispatch()
 
-    const [CountryList, setCountryList]= useState([])
+  const countryListByName = useSelector((state) => state.countryListByName)
 
-    useEffect(()=>{
-        fetch("https://restcountries.eu/rest/v2/all")
-        .then((response)=>{
-           return response.json()
-        })
-        .then((data)=>{
-            console.log(data)
-        })
-        .catch(() => {
-            console.log("hubo un error")
-        })
-    }, [])
+  const countryList = useSelector((state) => {
+    if (state.filterByRegion !== '' && countryListByName.length === 0) {
+      return state.coutryFilteredByRegion;
+    }
+    if (countryListByName.length > 0) {
+      return countryListByName
+    }
 
-    return (
-        <CountryListStyled>
-            <Country
-             name="Peru"
-             flag="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARMAAAC3CAMAAAAGjUrGAAAADFBMVEXZECP////YABTlfIGUWM3jAAABZElEQVR4nO3QOQ0AMBDAsD78ORdA5hsq2QiirDXm3D3nnrnwQZ6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up6UJ+VJeVKelCflSXlSnpQn5Ul5Up7Ut08evcpINOSdwxIAAAAASUVORK5CYII="
-             population={1232123123}
-             region="America"
-             capital="lima"
-            />
-        </CountryListStyled>
-    );
+    return state.countryList;
+  })
+
+  console.log('el estado total de mi app es', countryList)
+  // const [countryList, setCountryList] = useState([])
+  useEffect(() => {
+    fetch('https://restcountries.eu/rest/v2/all')
+      .then((response) => {
+        return response.json()
+      })
+      .then((list) => {
+        dispatch({
+          type: 'SET_COUNTRY_LIST',
+          payload: list
+        })
+        // setCountryList(data)
+        console.log(list.length)
+      })
+      .catch(() => {
+        console.log('hubo un error, que dolor que dolo que pena')
+      })
+  }, [dispatch])
+
+  return (
+    <Wrapper>
+      <CountryListStyled>
+        {
+          countryList.map(({ name, flag, population, capital, region, nativeName, cioc, alpha2Code }) => {
+            return (
+              <Country
+                flag={flag}
+                name={name}
+                key={name}
+                population={population}
+                region={region}
+                capital={capital}
+                nativeName={nativeName}
+                cioc={cioc}
+                alpha2Code={alpha2Code}
+              />
+            )
+          })
+        }
+      </CountryListStyled>
+    </Wrapper>
+  )
 }
 
-export default CountryList;
+export default CountryList
